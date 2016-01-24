@@ -1,5 +1,4 @@
 #' Pairwise dataframe
-
 pairwiseDeltas <- function(data, referent = NULL){
   if(is.null(referent)) refIndex <- 1
   else refIndex <- match(referent, data[ ,1])

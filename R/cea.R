@@ -1,88 +1,3 @@
-
-# Prepare CEA formula
-#
-# @description Prepares a CEA formula and checks its validity.  Checks
-# class and converts to 'Formula' if necessary so that parts can be
-# processed properly.
-#
-# @param formula an object of class 'formula' or of class 'Formula'.
-# @return an object of class 'Formula'.
-checkFormula <- function(formula){
-  if(is.element("Formula", formula %>% class))
-    return(formula)
-  else{
-    if(is.element("formula", formula %>% class))
-      return(Formula::Formula(formula))
-    else
-      stop("Invalid class for formula argument.")
-  }
-}
-
-# Prepare CEA data
-#
-# @description Constructs data.frame of CEA results based on terms defined
-# in formula.  Terms are evaluated in context of data.frame if provided and
-# in calling environment if otherwise.
-#
-# @param formula an object of class 'Formula' defining the terms.
-# @param data an optional data.frame in which the formula terms are to
-# be evaluated.
-# @return an a data.frame containing results of the CEA.
-
-checkData <- function(data, formula){
-
-  # Extract unevaluated formula terms
-  formulaTerms <- formula %>% attributes
-  costVar <- formulaTerms %$% lhs[[1]]
-  effVar <- formulaTerms %$% lhs[[2]]
-  txVar <- formulaTerms %$% rhs[[1]]
-  anaVars <- formulaTerms %$% rhs[-1]
-
-  # Get names of the analysis variables
-  anaVarNames <- vapply(
-    anaVars,
-    as.character,
-    character(anaVars %>% length)
-  )
-
-  # Evaluate terms
-  env <- environment(formula$terms)
-  costs <- eval(costVar, envir = data, enclos = env)
-  effs <- eval(effVar, envir = data, enclos = env)
-  txs <- eval(txVar, envir = data, enclos = env)
-  anas <- lapply(anaVars, eval, envir = data, enclos = env)
-
-  # Reconstruct data frame using evaluated terms
-  data <- list(txs,effs,costs) %>%
-    append(anas) %>%
-    do.call(cbind.data.frame, .)
-
-  # Name columns
-  colnames(data)[1] <- txVar %>% as.character
-  colnames(data)[2] <- effVar %>% as.character
-  colnames(data)[3] <- costVar %>% as.character
-  colnames(data)[3 + seq_len(length(anas))] <- anaVarNames
-
-  # Define variable keys
-  keyVars <- c(txVar %>% as.character, anaVarNames)
-
-  # No missing values
-  missVal <- lapply(data,function(x) x %>% is.na %>% any) %>%
-    as.logical %>%
-    any
-  if(missVal) stop("Missing values not allowed.")
-
-  # Combination of key values are unique
-  dataDistinct <- do.call(
-    dplyr::distinct_,
-    list(.data=data) %>%
-      append(keyVars %>% as.list)
-  )
-  if(nrow(data) != nrow(dataDistinct))
-    stop("Rows must be distinct by key variables.")
-
-  return(data)
-}
 #' Cost-effectiveness analysis
 #'
 #' @description Cost-effectiveness analysis results for a given set of scenarios.
@@ -119,4 +34,57 @@ cea <- function(formula, data = NULL){
   class(obj) <- "CEA"
 
   return(obj)
+}
+
+#' Pairwise cost-effectiveness analysis
+#'
+#' @description Performs pairwise comparisons of cost-effectiveness given an existing
+#' CEA object.
+#'
+#' @param cea an object of class CEA for which the comparisons are being
+#' caclulated
+#' @param referent an optional value indicated which intervention is to be
+#' used as the referent for pairwise comparisons.  If not specified, the first
+#' intervention in each analysis will be designated the referent.
+#' @param subset an optional vector specifying a subset of analyses to be
+#' used.
+#'
+#' @return an object of class pairCEA
+#' @export
+pairwise <- function(cea, referent, subset = NULL){
+
+  # Evaluated subset
+  selector <- eval(
+    substitute(subset),
+    envir = cea$data,
+    environment()
+  )
+
+  # Evaluate data
+  if(selector %>% is.null) data <- cea$data
+  else data <- cea$data[selector, ]
+
+  anaVars <- colnames(data)[3 + seq_len(-3 + data %>% ncol)]
+
+  # Split data by analyses
+  analyses <- data %>% plyr::ddply(
+    anaVars,
+    function(x){
+      # Check that referent exsits in analysis.  If it doesn't, exclude the analysis
+      # and warn user.
+      if(! referent %>% is.element(x[ ,1])){
+        warning("Referent not inclued in analysis.  Analysis excluded from results.")
+        return(NULL)
+      }
+      x %<>% dplyr::select_(paste0("-", anaVars))
+      return(pairwiseDeltas(x, referent = referent))
+    }
+  )
+  pairCEA <- list(
+    cea = cea,
+    referent = referent,
+    data = analyses
+  )
+  class(pairCEA) <- "pairCEA"
+  return(pairCEA)
 }
