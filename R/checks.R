@@ -23,19 +23,16 @@ checkFormula <- function(formula){
 # in formula.  Terms are evaluated in context of data.frame if provided and
 # in calling environment if otherwise.
 #
-# @param formula an object of class 'Formula' defining the terms.
+# @param env Environment of CEA model formula.
+# @costVar Unevaluated term of cost parameter.
+# @costVar Unevaluated term of efficacy parameter.
+# @costVar Unevaluated term of treatment parameter.
+# @costVar List of unevaluated term of analysis parameters.
 # @param data an optional data.frame in which the formula terms are to
 # be evaluated.
 # @return an a data.frame containing results of the CEA.
 
-checkData <- function(data, formula){
-
-  # Extract unevaluated formula terms
-  formulaTerms <- formula %>% attributes
-  costVar <- formulaTerms %$% lhs[[1]]
-  effVar <- formulaTerms %$% lhs[[2]]
-  txVar <- formulaTerms %$% rhs[[1]]
-  anaVars <- formulaTerms %$% rhs[-1]
+checkData <- function(env, costVar, effVar, txVar, anaVars, data = NULL){
 
   # Get names of the analysis variables
   anaVarNames <- vapply(
@@ -45,7 +42,6 @@ checkData <- function(data, formula){
   )
 
   # Evaluate terms
-  env <- environment(formula$terms)
   costs <- eval(costVar, envir = data, enclos = env)
   effs <- eval(effVar, envir = data, enclos = env)
   txs <- eval(txVar, envir = data, enclos = env)

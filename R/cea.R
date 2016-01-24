@@ -19,20 +19,37 @@ cea <- function(formula, data = NULL){
   # Save original call
   call <- match.call()
 
+  # Capture environment
+  env <- formula %>% environment
+
   # Validate formula
   formula %<>% checkFormula
 
+  # Extract unevaluated formula terms
+  formulaTerms <- formula %>% attributes
+  costVar <- formulaTerms %$% lhs[[2]]
+  effVar <- formulaTerms %$% lhs[[1]]
+  txVar <- formulaTerms %$% rhs[[1]]
+  anaVars <- formulaTerms %$% rhs[-1]
+
   # Validate data
-  data %<>% checkData(formula)
+  data %<>% checkData(env, costVar, effVar, txVar, anaVars, .)
 
   # Construct object
   obj <- list(
     call = call,
     formula = formula,
+    costVar = costVar,
+    effVar = effVar,
+    txVar = txVar,
+    anaVars = anaVars,
     data = data
   )
+
+  # Set class
   class(obj) <- "CEA"
 
+  # Return object
   return(obj)
 }
 
@@ -67,7 +84,7 @@ pairwise <- function(cea, referent, subset = NULL){
   anaVars <- colnames(data)[3 + seq_len(-3 + data %>% ncol)]
 
   # Split data by analyses
-  analyses <- data %>% plyr::dlply(
+  data %<>% plyr::ddply(
     anaVars,
     function(x){
       # Check that referent exsits in analysis.  If it doesn't, exclude the analysis
@@ -76,14 +93,20 @@ pairwise <- function(cea, referent, subset = NULL){
         warning("Referent not inclued in analysis.  Analysis excluded from results.")
         return(NULL)
       }
-      x %<>% dplyr::select_(paste0("-", anaVars))
-      return(pairwiseDeltas(x, referent = referent))
+      x %<>% dplyr::select_(paste0("-", anaVars)) %>%
+        pairwiseDeltas(referent = referent)
+      return(x)
     }
   )
   pairCEA <- list(
-    cea = cea,
+    call = cea$call,
+    formula = cea$formula,
+    costVar = cea$costVar,
+    effVar = cea$effVar,
+    txVar = cea$txVar,
+    anaVars = cea$anaVars,
     referent = referent,
-    data = analyses
+    data = data
   )
   class(pairCEA) <- "pairCEA"
   return(pairCEA)

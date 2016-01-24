@@ -2,18 +2,25 @@
 % Please edit documentation in R/ce.R
 \name{icer}
 \alias{icer}
-\title{Calculate incremental cost-effectiveness ratios for a given set of analyses}
+\title{Caclulate incremental cost-effectiveness ratio based on differenes in effectiveness, cost}
 \usage{
-icer(cea)
+icer(deltaEff, deltaCost)
 }
 \arguments{
-\item{pairCEA}{An object of class pairCEA}
+\item{deltaEff}{Differences in clinical efficacy.}
 }
 \value{
-An object of class pairICER.
+An object of class ICER.
 }
 \description{
-Calculate the incremental cost-effectiveness ratio of one or more interventions based on the
-differences in clinical effectiveness and costs.  Depending on
+Caclulate incremental cost-effectiveness ratio based on differenes in effectiveness, cost
+}
+\details{
+ICER objects are numeric vectors representing cost-effectiveness ratios.  When
+the referent is more costly/more effective than the comparator, the ICER is represented
+as a postive number.  When the comparator is more costly/more effective, the ICER is
+represented as a negative value.  Dominance is represented by infinite values (\code{-Inf}: Dominant,
+\code{Inf}: Dominated).  If the referent have exactly as costly/effective, the ICER is represented as
+\code{NaN}.
 }
 
