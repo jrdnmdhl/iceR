@@ -10,6 +10,6 @@
 #' @section probabilistic:
 #' Methods for post-processing the results of probabilistic sensitivity analyses.
 #' @docType package
-#' @name iceR
+#' @name iceR-Package
 NULL
 #> NULL
