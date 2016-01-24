@@ -67,7 +67,7 @@ pairwise <- function(cea, referent, subset = NULL){
   anaVars <- colnames(data)[3 + seq_len(-3 + data %>% ncol)]
 
   # Split data by analyses
-  analyses <- data %>% plyr::ddply(
+  analyses <- data %>% plyr::dlply(
     anaVars,
     function(x){
       # Check that referent exsits in analysis.  If it doesn't, exclude the analysis

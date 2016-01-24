@@ -3,6 +3,8 @@
 S3method(as.character,ICER)
 S3method(as.data.frame,ICER)
 S3method(as.numeric,ICER)
+S3method(icer,pairCEA)
+export(calcIcer)
 export(cea)
 export(icer)
 export(pairwise)

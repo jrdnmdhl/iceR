@@ -1,5 +1,3 @@
-
-
 #' @export
 as.character.ICER <- function(icer){
   referent <- is.finite(icer) & icer > 0

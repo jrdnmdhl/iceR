@@ -2,20 +2,18 @@
 % Please edit documentation in R/ce.R
 \name{icer}
 \alias{icer}
-\title{Calculate incremental cost-effectiveness ratio}
+\title{Calculate incremental cost-effectiveness ratios for a given set of analyses}
 \usage{
-icer(deltaEff, deltaCost)
+icer(cea)
 }
 \arguments{
-\item{deltaEff}{Differences in clinical effectiveness.}
-
-\item{deltaCost}{Differences in costs.}
+\item{pairCEA}{An object of class pairCEA}
 }
 \value{
-An object of class ICER.
+An object of class pairICER.
 }
 \description{
 Calculate the incremental cost-effectiveness ratio of one or more interventions based on the
-differences in clinical effectiveness and costs.
+differences in clinical effectiveness and costs.  Depending on
 }
 
