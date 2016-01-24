@@ -1,0 +1,13 @@
+Package: iceR
+Type: Package
+Title: Post-processing CEA results
+Version: 0.1
+Date: 2016-01-22
+Author: Jordan Amdahl
+Maintainer: Jordan Amdahl <jrdnmdhl@gmail.com>
+Description: The iceR package provides objects and methods for post-processing the the results of cost-effectiveness analyses, including tools for reporting results of deterministic and probabilistic sensitivity analyses.
+License: MIT
+Imports: Formula, lazyeval, plyr, dplyr
+Depends: magrittr
+LazyData: TRUE
+RoxygenNote: 5.0.1
