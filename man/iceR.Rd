@@ -8,6 +8,8 @@ icer(deltaEff, deltaCost)
 }
 \arguments{
 \item{deltaEff}{Differences in clinical efficacy.}
+
+\item{deltaCost}{Differences in cost.}
 }
 \value{
 An object of class ICER.

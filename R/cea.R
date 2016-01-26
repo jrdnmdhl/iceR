@@ -84,20 +84,29 @@ pairwise <- function(cea, referent, subset = NULL){
   anaVars <- colnames(data)[3 + seq_len(-3 + data %>% ncol)]
 
   # Split data by analyses
-  data %<>% plyr::ddply(
-    anaVars,
-    function(x){
-      # Check that referent exsits in analysis.  If it doesn't, exclude the analysis
-      # and warn user.
-      if(! referent %>% is.element(x[ ,1])){
-        warning("Referent not inclued in analysis.  Analysis excluded from results.")
-        return(NULL)
+  if(length(anaVars) > 0){
+    data %<>% plyr::ddply(
+      anaVars,
+      function(x){
+        # Check that referent exsits in analysis.  If it doesn't, exclude the analysis
+        # and warn user.
+        if(! referent %>% is.element(x[ ,1])){
+          warning("Referent not inclued in analysis.  Analysis excluded from results.")
+          return(NULL)
+        }
+        x %<>% dplyr::select_(paste0("-", anaVars)) %>%
+          pairwiseDeltas(referent = referent)
+        return(x)
       }
-      x %<>% dplyr::select_(paste0("-", anaVars)) %>%
-        pairwiseDeltas(referent = referent)
-      return(x)
+    )
+  }else{
+    if(! referent %>% is.element(data[ ,1])){
+      warning("Referent not inclued in analysis.  Analysis excluded from results.")
+      return(NULL)
     }
-  )
+    data %<>%
+      pairwiseDeltas(referent = referent)
+  }
   pairCEA <- list(
     call = cea$call,
     formula = cea$formula,
@@ -111,3 +120,5 @@ pairwise <- function(cea, referent, subset = NULL){
   class(pairCEA) <- "pairCEA"
   return(pairCEA)
 }
+
+

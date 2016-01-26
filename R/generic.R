@@ -48,9 +48,11 @@ as.data.frame.ICER <- function(x, ...){
 
 #' @export
 print.pairCEA <- function(x){
-  cat("Call: \n")
+  anaVars <- x$anaVars %>% as.character
+
+  cat("Call: ")
   print(x$call)
-  cat("\n")
+  cat("Referent:", x$referent,"\n")
   cat("Results: \n")
   data <- x$data
 
@@ -92,7 +94,30 @@ print.pairCEA <- function(x){
   data$icer <- data$icer %>% as.character
   data[[x$costVar %>% as.character]]
 
-  print(data, row.names = FALSE)
+  if(length(anaVars > 0)){
+      dataList <- data %>% plyr::dlply(
+      anaVars,
+      function(x) x %>% dplyr::select_(paste0("-", anaVars))
+    )
+    labels <- dataList %>% attr("split_labels")
+    listNames <- lapply(
+      seq_len(labels %>% ncol),
+      function(i) paste0(colnames(labels)[i], ": ", labels[ ,i])
+    ) %>%
+      append(list(sep = ", ")) %>%
+      do.call(paste, .)
+    names(dataList) <- listNames
+    plyr::l_ply(
+      seq_len(dataList %>% length),
+      function(i){
+        cat("  ",names(dataList)[i],"\n")
+        #print(dataList[[i]], row.names = FALSE)
+        printCETable(dataList[[i]], x$referent)
+      }
+    )
+  }else{
+    print(x$data, row.names = FALSE)
+  }
 
   # Add message for dagger if applicable
   if(any(is.finite(x$data$icer) & x$data$icer < 0)){

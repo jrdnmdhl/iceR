@@ -24,7 +24,7 @@ pairwiseDeltas <- function(data, referent = NULL){
 #' Caclulate incremental cost-effectiveness ratio based on differenes in effectiveness, cost
 #'
 #' @param deltaEff Differences in clinical efficacy.
-#' @peram deltaCost Differences in cost.
+#' @param deltaCost Differences in cost.
 #'
 #' @return An object of class ICER.
 #' @details ICER objects are numeric vectors representing cost-effectiveness ratios.  When
