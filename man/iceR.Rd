@@ -23,6 +23,6 @@ the referent is more costly/more effective than the comparator, the ICER is repr
 as a postive number.  When the comparator is more costly/more effective, the ICER is
 represented as a negative value.  Dominance is represented by infinite values (\code{-Inf}: Dominant,
 \code{Inf}: Dominated).  If the referent have exactly as costly/effective, the ICER is represented as
-\code{NaN}.
+\code{0}.
 }
 

@@ -122,3 +122,56 @@ pairwise <- function(cea, referent, subset = NULL){
 }
 
 
+#' Incremental cost-effectiveness analysis
+#'
+#' @description Performs incremental comparisons of cost-effectiveness given an existing
+#' CEA object.
+#'
+#' @param cea an object of class CEA for which the comparisons are being
+#' caclulated
+#' @param subset an optional vector specifying a subset of analyses to be
+#' used.
+#'
+#' @return an object of class pairCEA
+#' @export
+incremental <- function(cea, extended=T, subset = NULL){
+
+  # Evaluated subset
+  selector <- eval(
+    substitute(subset),
+    envir = cea$data,
+    environment()
+  )
+
+  # Evaluate data
+  if(selector %>% is.null) data <- cea$data
+  else data <- cea$data[selector, ]
+
+  anaVars <- colnames(data)[3 + seq_len(-3 + data %>% ncol)]
+
+  # Split data by analyses
+  if(length(anaVars) > 0){
+    data %<>% plyr::ddply(
+      anaVars,
+      function(x){
+        x %<>% dplyr::select_(paste0("-", anaVars)) %>%
+          incrDeltas(extended = extended)
+        return(x)
+      }
+    )
+  }else{
+    data %<>%
+      incrDeltas(extended = extended)
+  }
+  incrCEA <- list(
+    call = cea$call,
+    formula = cea$formula,
+    costVar = cea$costVar,
+    effVar = cea$effVar,
+    txVar = cea$txVar,
+    anaVars = cea$anaVars,
+    data = data
+  )
+  class(incrCEA) <- "incrCEA"
+  return(incrCEA)
+}

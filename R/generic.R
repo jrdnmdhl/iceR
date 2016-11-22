@@ -6,7 +6,7 @@ as.character.ICER <- function(icer){
   comparator <- is.finite(icer) & icer < 0
   dominant <- is.infinite(icer) & icer < 0
   dominated <- is.infinite(icer) & icer > 0
-  equivalent <- is.nan(icer)
+  equivalent <- icer == 0
   missing <- is.na(icer) & !is.nan(icer)
 
   # Convert to character
@@ -110,6 +110,7 @@ print.pairCEA <- function(x){
     plyr::l_ply(
       seq_len(dataList %>% length),
       function(i){
+        cat("\n")
         cat("  ",names(dataList)[i],"\n")
         #print(dataList[[i]], row.names = FALSE)
         printCETable(dataList[[i]], x$referent)
